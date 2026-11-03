@@ -46,13 +46,15 @@ else:
         st.session_state.subscribed = False
         st.rerun()
 
-# 4. РЕКЛАМНЫЙ БАННЕР
+# 4. РЕКЛАМНЫЙ БАННЕР (КЛИКАБЕЛЬНЫЙ)
 if not st.session_state.subscribed:
     st.markdown("""
-    <div style="background-color: #ffeb3b; padding: 15px; border-radius: 10px; text-align: center; border: 2px dashed #f44336; margin-bottom: 20px;">
-        <h3 style="color: #d32f2f; margin: 0;">📢 ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА!</h3>
-        <p style="margin: 5px 0 0 0; color: #333;">Оформите подписку за 50 ₽ в неделю, чтобы убрать баннеры и получить доступ ко всем данным.</p>
-    </div>
+    <a href="https://github.com/fedorkudravcev695-lab/marketscan" target="_blank" style="text-decoration: none; display: block;">
+        <div style="background-color: #ffeb3b; padding: 15px; border-radius: 10px; text-align: center; border: 2px dashed #f44336; margin-bottom: 20px; cursor: pointer; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">
+            <span style="color: #d32f2f; font-size: 24px; font-weight: bold; display: block; margin-bottom: 5px;">📢 ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА!</span>
+            <span style="color: #333; font-size: 16px; display: block;">Нажми на баннер, чтобы перейти по ссылке! Или оформи подписку за 50 ₽.</span>
+        </div>
+    </a>
     """, unsafe_allow_html=True)
 
 # ==========================================
@@ -121,7 +123,7 @@ elif page == "🛒 Wildberries":
                 st.success("⭐ Вы видите этот график, потому что у вас есть Premium!")
 
 # ==========================================
-# ВКЛАДКА 4: OZON (НОВЫЙ ФУНКЦИОНАЛ!)
+# ВКЛАДКА 4: OZON
 # ==========================================
 elif page == "🔵 Ozon":
     st.title("🔵 Аналитика Ozon")
@@ -138,7 +140,6 @@ elif page == "🔵 Ozon":
     
     if st.button("🔍 Проанализировать нишу Ozon"):
         with st.spinner("Робот собирает данные с Ozon..."):
-            # Генерируем данные под Ozon (электроника, подороже)
             brands = ["Samsung", "Apple", "Xiaomi", "Huawei", "Honor"]
             categories = ["Смартфон", "Наушники", "Ноутбук", "Умные часы", "Планшет"]
             
@@ -155,10 +156,8 @@ elif page == "🔵 Ozon":
                 })
             ozon_df = pd.DataFrame(data)
             
-            # Показываем таблицу всем
             st.dataframe(ozon_df, use_container_width=True, hide_index=True)
             
-            # Paywall (замок) для графиков
             if not st.session_state.subscribed:
                 st.error("🔒 Круговая диаграмма и анализ брендов скрыты. Оформите подписку за 50 ₽, чтобы увидеть их!")
             else:
@@ -167,11 +166,4 @@ elif page == "🔵 Ozon":
                              title="Распределение бюджета по брендам", hole=0.4,
                              color_discrete_sequence=px.colors.qualitative.Pastel)
                 st.plotly_chart(fig, use_container_width=True)
-                st.success("⭐ Вы видите этот график, потому что у вас есть Premium!")# 4. РЕКЛАМНЫЙ БАННЕР
-if not st.session_state.subscribed:
-    st.markdown("""
-    <div style="background-color: #ffeb3b; padding: 15px; border-radius: 10px; text-align: center; border: 2px dashed #f44336; margin-bottom: 20px;">
-        <h3 style="color: #d32f2f; margin: 0;">📢 ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА!</h3>
-        <p style="margin: 5px 0 0 0; color: #333;">Оформите подписку за 50 ₽ в неделю, чтобы убрать баннеры и получить доступ ко всем данным.</p>
-    </div>
-    """, unsafe_allow_html=True)
+                st.success("⭐ Вы видите этот график, потому что у вас есть Premium!")
