@@ -20,7 +20,7 @@ hide_streamlit_style = """
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-# 2. СИСТЕМА ПОДПИСКИ (Пока имитация)
+# 2. СИСТЕМА ПОДПИСКИ (Имитация)
 if 'subscribed' not in st.session_state:
     st.session_state.subscribed = False
 
@@ -46,7 +46,7 @@ else:
         st.session_state.subscribed = False
         st.rerun()
 
-# 4. РЕКЛАМНЫЙ БАННЕР (Показывается только без подписки)
+# 4. РЕКЛАМНЫЙ БАННЕР
 if not st.session_state.subscribed:
     st.markdown("""
     <div style="background-color: #ffeb3b; padding: 15px; border-radius: 10px; text-align: center; border: 2px dashed #f44336; margin-bottom: 20px;">
@@ -95,25 +95,22 @@ elif page == "🌐 Парсер Книг":
 elif page == "🛒 Wildberries":
     st.title("🛒 Аналитика Wildberries")
     
-    # Поле для API ключа
     st.subheader("🔑 Подключение к вашему магазину")
-    api_key = st.text_input("Введите ваш API-ключ от WB Партнёры:", type="password")
+    api_key = st.text_input("Введите ваш API-ключ от WB Партнёры:", type="password", key="wb_key")
     
     if api_key:
         st.success("✅ Ключ принят! (Функция запроса к WB API будет добавлена на следующем уроке)")
     else:
-        st.info("Введите ключ, чтобы увидеть аналитику вашего магазина. Ключ можно получить в личном кабинете WB Партнёры -> Настройки -> API.")
+        st.info("Введите ключ, чтобы увидеть аналитику вашего магазина.")
     
     st.divider()
     
-    # Демонстрация
-    if st.button("🔍 Показать пример анализа цен"):
+    if st.button("🔍 Показать пример анализа цен WB"):
         with st.spinner("Робот анализирует нишу..."):
             brands = ["Nike", "Adidas", "Puma", "Reebok", "NoName"]
             data = [{"Бренд": random.choice(brands), "Цена (руб)": random.randint(1500, 12000), "Продажи": random.randint(10, 500)} for _ in range(10)]
             wb_df = pd.DataFrame(data)
             
-            # Если НЕТ подписки - показываем только таблицу, графики скрыты (Paywall)
             st.dataframe(wb_df, use_container_width=True, hide_index=True)
             
             if not st.session_state.subscribed:
@@ -124,8 +121,50 @@ elif page == "🛒 Wildberries":
                 st.success("⭐ Вы видите этот график, потому что у вас есть Premium!")
 
 # ==========================================
-# ВКЛАДКА 4: OZON
+# ВКЛАДКА 4: OZON (НОВЫЙ ФУНКЦИОНАЛ!)
 # ==========================================
 elif page == "🔵 Ozon":
     st.title("🔵 Аналитика Ozon")
-    st.info("💡 В реальности здесь будет подключение по API-ключам продавца Ozon.")
+    
+    st.subheader("🔑 Подключение к вашему магазину Ozon")
+    ozon_key = st.text_input("Введите ваш Client ID и Api-Key от Ozon Seller:", type="password", key="ozon_key")
+    
+    if ozon_key:
+        st.success("✅ Ключ принят! (Интеграция с Ozon API появится позже)")
+    else:
+        st.info("Введите ключ, чтобы увидеть аналитику вашего магазина.")
+    
+    st.divider()
+    
+    if st.button("🔍 Проанализировать нишу Ozon"):
+        with st.spinner("Робот собирает данные с Ozon..."):
+            # Генерируем данные под Ozon (электроника, подороже)
+            brands = ["Samsung", "Apple", "Xiaomi", "Huawei", "Honor"]
+            categories = ["Смартфон", "Наушники", "Ноутбук", "Умные часы", "Планшет"]
+            
+            data = []
+            for i in range(10):
+                price = random.randint(5000, 80000)
+                discount = random.randint(5, 30)
+                data.append({
+                    "Бренд": random.choice(brands),
+                    "Товар": random.choice(categories),
+                    "Цена (руб)": price,
+                    "Скидка по карте Ozon (%)": discount,
+                    "Цена с картой (руб)": int(price * (1 - discount / 100))
+                })
+            ozon_df = pd.DataFrame(data)
+            
+            # Показываем таблицу всем
+            st.dataframe(ozon_df, use_container_width=True, hide_index=True)
+            
+            # Paywall (замок) для графиков
+            if not st.session_state.subscribed:
+                st.error("🔒 Круговая диаграмма и анализ брендов скрыты. Оформите подписку за 50 ₽, чтобы увидеть их!")
+            else:
+                st.subheader("📊 Доля брендов в нише")
+                fig = px.pie(ozon_df, names="Бренд", values="Цена (руб)", 
+                             title="Распределение бюджета по брендам", hole=0.4,
+                             color_discrete_sequence=px.colors.qualitative.Pastel)
+                st.plotly_chart(fig, use_container_width=True)
+                st.success("⭐ Вы видите этот график, потому что у вас есть Premium!")
