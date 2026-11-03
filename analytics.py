@@ -5,6 +5,7 @@ import plotly.express as px
 import requests
 from bs4 import BeautifulSoup
 import random
+import time
 
 # 1. НАСТРОЙКА СТРАНИЦЫ
 st.set_page_config(page_title="MarketScan Pro", page_icon="📊", layout="wide")
@@ -19,28 +20,61 @@ hide_streamlit_style = """
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-# 2. БОКОВАЯ ПАНЕЛЬ
+# 2. СИСТЕМА ПОДПИСКИ (Пока имитация)
+if 'subscribed' not in st.session_state:
+    st.session_state.subscribed = False
+
+# 3. БОКОВАЯ ПАНЕЛЬ
 st.sidebar.header("🗂 Навигация")
 page = st.sidebar.radio("Выбери раздел:", 
-    ["📊 Демо-аналитика", "🌐 Парсер Книг (Реальный)", "🛒 Wildberries", "🔵 Ozon"])
+    ["📊 Демо-аналитика", "🌐 Парсер Книг", "🛒 Wildberries", "🔵 Ozon"])
+
+st.sidebar.divider()
+
+# Блок подписки в сайдбаре
+st.sidebar.header("💳 Подписка")
+if not st.session_state.subscribed:
+    st.sidebar.warning("У вас нет подписки. Вы видите рекламу.")
+    if st.sidebar.button("Оплатить 50 ₽ / неделя"):
+        st.session_state.subscribed = True
+        st.sidebar.success("✅ Подписка оформлена! Реклама убрана.")
+        time.sleep(1)
+        st.rerun()
+else:
+    st.sidebar.success("⭐ Premium активен. Рекламы нет.")
+    if st.sidebar.button("Отменить подписку"):
+        st.session_state.subscribed = False
+        st.rerun()
+
+# 4. РЕКЛАМНЫЙ БАННЕР (Показывается только без подписки)
+if not st.session_state.subscribed:
+    st.markdown("""
+    <div style="background-color: #ffeb3b; padding: 15px; border-radius: 10px; text-align: center; border: 2px dashed #f44336; margin-bottom: 20px;">
+        <h3 style="color: #d32f2f; margin: 0;">📢 ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА!</h3>
+        <p style="margin: 5px 0 0 0; color: #333;">Оформите подписку за 50 ₽ в неделю, чтобы убрать баннеры и получить доступ ко всем данным.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 # ==========================================
 # ВКЛАДКА 1: ДЕМО-АНАЛИТИКА
 # ==========================================
 if page == "📊 Демо-аналитика":
     st.title("📊 MarketScan: Аналитика конкурентов")
-    st.markdown("*(Это демо-данные. Переключи вкладку слева!)*")
-    # (Код демо-вкладки оставляем прежним, я его сократил для удобства)
+    if not st.session_state.subscribed:
+        st.info("💡 Вы видите только 1 график. Оформите подписку, чтобы видеть все данные.")
+    
     df = pd.DataFrame(np.random.randn(20, 3), columns=["Цена", "Продажи", "Рейтинг"])
     st.line_chart(df)
 
 # ==========================================
 # ВКЛАДКА 2: РЕАЛЬНЫЙ ПАРСЕР КНИГ
 # ==========================================
-elif page == "🌐 Парсер Книг (Реальный)":
+elif page == "🌐 Парсер Книг":
     st.title("🌐 Живой парсер (Books to Scrape)")
-    
-    @st.cache_data(ttl=60)
+    if not st.session_state.subscribed:
+        st.warning("⚠️ В бесплатной версии данные обновляются раз в час. В Premium — каждую минуту.")
+        
+    @st.cache_data(ttl=3600 if not st.session_state.subscribed else 60)
     def get_books():
         url = "http://books.toscrape.com/"
         soup = BeautifulSoup(requests.get(url).text, 'html.parser')
@@ -56,64 +90,42 @@ elif page == "🌐 Парсер Книг (Реальный)":
     st.dataframe(books_df, use_container_width=True, hide_index=True)
 
 # ==========================================
-# ВКЛАДКА 3: WILDBERRIES (Имитация)
+# ВКЛАДКА 3: WILDBERRIES
 # ==========================================
 elif page == "🛒 Wildberries":
     st.title("🛒 Аналитика Wildberries")
-    st.warning("⚠️ Внимание: Это симуляция. Настоящий парсинг WB требует обхода капчи и прокси-серверов (уровень 'Босс').")
     
-    search_query = st.text_input("Введите товар для поиска (например: Кроссовки, Футболка):", "Кроссовки")
+    # Поле для API ключа
+    st.subheader("🔑 Подключение к вашему магазину")
+    api_key = st.text_input("Введите ваш API-ключ от WB Партнёры:", type="password")
     
-    if st.button("🔍 Найти на WB"):
-        with st.spinner("Робот ищет товары на Wildberries..."):
-            # Генерируем реалистичные данные
-            brands = ["Nike", "Adidas", "Puma", "Reebok", "NoName", "Demix"]
-            data = []
-            for i in range(10):
-                data.append({
-                    "Бренд": random.choice(brands),
-                    "Товар": f"{search_query} модель {i+1}",
-                    "Цена (руб)": random.randint(1500, 12000),
-                    "Рейтинг": round(random.uniform(3.5, 5.0), 1),
-                    "Отзывы": random.randint(10, 5000),
-                    "Продавец": f"ИП Иванов {i}"
-                })
+    if api_key:
+        st.success("✅ Ключ принят! (Функция запроса к WB API будет добавлена на следующем уроке)")
+    else:
+        st.info("Введите ключ, чтобы увидеть аналитику вашего магазина. Ключ можно получить в личном кабинете WB Партнёры -> Настройки -> API.")
+    
+    st.divider()
+    
+    # Демонстрация
+    if st.button("🔍 Показать пример анализа цен"):
+        with st.spinner("Робот анализирует нишу..."):
+            brands = ["Nike", "Adidas", "Puma", "Reebok", "NoName"]
+            data = [{"Бренд": random.choice(brands), "Цена (руб)": random.randint(1500, 12000), "Продажи": random.randint(10, 500)} for _ in range(10)]
             wb_df = pd.DataFrame(data)
             
-            st.success(f"✅ Найдено {len(wb_df)} товаров по запросу '{search_query}'")
+            # Если НЕТ подписки - показываем только таблицу, графики скрыты (Paywall)
             st.dataframe(wb_df, use_container_width=True, hide_index=True)
             
-            # График цен
-            fig = px.scatter(wb_df, x="Цена (руб)", y="Рейтинг", size="Отзывы", 
-                             color="Бренд", hover_name="Товар", title="Карта цен и рейтинга")
-            st.plotly_chart(fig, use_container_width=True)
+            if not st.session_state.subscribed:
+                st.error("🔒 Графики и глубокий анализ скрыты. Оформите подписку за 50 ₽, чтобы увидеть их!")
+            else:
+                fig = px.scatter(wb_df, x="Цена (руб)", y="Продажи", color="Бренд", size="Продажи", title="Карта цен и продаж")
+                st.plotly_chart(fig, use_container_width=True)
+                st.success("⭐ Вы видите этот график, потому что у вас есть Premium!")
 
 # ==========================================
-# ВКЛАДКА 4: OZON (Имитация)
+# ВКЛАДКА 4: OZON
 # ==========================================
 elif page == "🔵 Ozon":
     st.title("🔵 Аналитика Ozon")
-    st.info("💡 В реальности здесь будет код, который стучится в Ozon Seller API по ключу продавца.")
-    
-    search_query = st.text_input("Введите категорию Ozon:", "Электроника")
-    
-    if st.button("🔍 Проанализировать Ozon"):
-        with st.spinner("Анализируем нишу Ozon..."):
-            brands = ["Samsung", "Apple", "Xiaomi", "Huawei", "Honor"]
-            data = []
-            for i in range(8):
-                data.append({
-                    "Бренд": random.choice(brands),
-                    "Товар": f"{search_query} {i+1}",
-                    "Цена (руб)": random.randint(5000, 80000),
-                    "В наличии": random.randint(0, 100),
-                    "Ozon Карта (скидка)": f"{random.randint(5, 30)}%"
-                })
-            ozon_df = pd.DataFrame(data)
-            
-            st.success("✅ Данные Ozon загружены!")
-            st.dataframe(ozon_df, use_container_width=True, hide_index=True)
-            
-            # Круговая диаграмма распределения брендов
-            fig = px.pie(ozon_df, names="Бренд", values="Цена (руб)", title="Доля брендов в нише по цене")
-            st.plotly_chart(fig, use_container_width=True)
+    st.info("💡 В реальности здесь будет подключение по API-ключам продавца Ozon.")
