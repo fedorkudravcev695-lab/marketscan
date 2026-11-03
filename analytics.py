@@ -167,4 +167,11 @@ elif page == "🔵 Ozon":
                              title="Распределение бюджета по брендам", hole=0.4,
                              color_discrete_sequence=px.colors.qualitative.Pastel)
                 st.plotly_chart(fig, use_container_width=True)
-                st.success("⭐ Вы видите этот график, потому что у вас есть Premium!")
+                st.success("⭐ Вы видите этот график, потому что у вас есть Premium!")# 4. РЕКЛАМНЫЙ БАННЕР
+if not st.session_state.subscribed:
+    st.markdown("""
+    <div style="background-color: #ffeb3b; padding: 15px; border-radius: 10px; text-align: center; border: 2px dashed #f44336; margin-bottom: 20px;">
+        <h3 style="color: #d32f2f; margin: 0;">📢 ЗДЕСЬ МОЖЕТ БЫТЬ ВАША РЕКЛАМА!</h3>
+        <p style="margin: 5px 0 0 0; color: #333;">Оформите подписку за 50 ₽ в неделю, чтобы убрать баннеры и получить доступ ко всем данным.</p>
+    </div>
+    """, unsafe_allow_html=True)
